@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DidYouMean", "DidYouMean\DidYouMean.csproj", "{9733F63C-765F-48DA-BE5E-FA74F4F7EF6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DidYouMeanTest", "DidYouMeanTest\DidYouMeanTest.csproj", "{FAC2581E-E8F7-4578-A99C-ACCD2F136D39}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{9733F63C-765F-48DA-BE5E-FA74F4F7EF6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9733F63C-765F-48DA-BE5E-FA74F4F7EF6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9733F63C-765F-48DA-BE5E-FA74F4F7EF6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAC2581E-E8F7-4578-A99C-ACCD2F136D39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAC2581E-E8F7-4578-A99C-ACCD2F136D39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAC2581E-E8F7-4578-A99C-ACCD2F136D39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAC2581E-E8F7-4578-A99C-ACCD2F136D39}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
