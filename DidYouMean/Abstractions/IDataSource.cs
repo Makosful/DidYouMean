@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DidYouMean.Abstractions
@@ -7,7 +8,7 @@ namespace DidYouMean.Abstractions
     /// </summary>
     public interface IDataSource
     {
-        Task<string> GetAllAsync();
+        Task<IEnumerable<string>> GetAllAsync();
 
         Task<bool> ExistsAsync(string s);
     }
