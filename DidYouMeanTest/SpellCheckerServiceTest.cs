@@ -65,7 +65,7 @@ namespace DidYouMeanTest
         }
 
         [Theory]
-        [InlineData("ab",  2, 0, new[] {"aa", "abc", "cc"})]
+        [InlineData("ab",  2, 0, new[] {"aa", "cc", "abc"})]
         [InlineData("cd",  1, 0, new[] {"cc", "aa"})]
         [InlineData("abc", 1, 0, new string[0])]
         [InlineData("acc", 3, 2, new[] {"abc", "acd"})]
@@ -80,7 +80,8 @@ namespace DidYouMeanTest
             IEnumerable<string> actual = await service.GetSimilarWordsAsync(input, maxDistance, maxAmount);
 
             // Assert
-            actual.Should().BeEquivalentTo(results);
+            actual.Should()
+                .Equal(results);
         }
         
         [Fact]
@@ -99,6 +100,27 @@ namespace DidYouMeanTest
 
             // Assert
             await Assert.ThrowsAsync<InvalidOperationException>(Act);
+        }
+
+        [Theory]
+        [InlineData("abc",  1, 3, new[] {"abc", "acd", "cba"})]
+        [InlineData("abdc", 1, 0, new[] {"abcd"})]
+        [InlineData("ab",   2, 0, new[] {"aa", "cc", "abc"})]
+        [InlineData("cd",   1, 0, new[] {"cc", "aa"})]
+        [InlineData("acc",  3, 2, new[] {"abc", "acd"})]
+        [InlineData("a",    6, 0, new[] {"aa", "cc", "abc", "acd", "bcd", "dca", "cba", "abcd"})]
+        public async Task GetSimilarWordsForceAsync(string input, int maxDistance, int maxAmount, string[] results)
+        {
+            // Arrange
+            ISpellCheckerService service = CreateSpellCheckerService(
+                out Mock<IDataSource> mockDataSource);
+            
+            // Act
+            IEnumerable<string> actual = await service.GetSimilarWordsForceAsync(input, maxDistance, maxAmount);
+            
+            // Assert
+            actual.Should()
+                .Equal(results);
         }
         
         [Fact]
