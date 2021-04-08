@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DidYouMean;
 using DidYouMean.Abstractions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -22,6 +23,12 @@ namespace DidYouMeanTest
         private static Mock<IDataSource> CreateMockDataSource()
         {
             Mock<IDataSource> mock = new Mock<IDataSource>();
+
+            mock.Setup(x => x.GetAllAsync())
+                .ReturnsAsync(new List<string>
+                {
+                    "abc", "abcd", "bcd", "acd", "dca", "aa", "cba", "cc",
+                });
             return mock;
         }
         
@@ -55,6 +62,25 @@ namespace DidYouMeanTest
 
             // Assert
             await Assert.ThrowsAsync<InvalidOperationException>(Act);
+        }
+
+        [Theory]
+        [InlineData("ab",  2, 0, new[] {"aa", "abc", "cc"})]
+        [InlineData("cd",  1, 0, new[] {"cc", "aa"})]
+        [InlineData("abc", 1, 0, new string[0])]
+        [InlineData("acc", 3, 2, new[] {"abc", "acd"})]
+        [InlineData("a",   6, 0, new[] {"aa", "cc", "abc", "acd", "bcd", "dca", "cba", "abcd"})]
+        public async Task GetSimilarWordsAsync_ResponseTest(string input, int maxDistance, int maxAmount, string[] results)
+        {
+            // Arrange
+            ISpellCheckerService service = CreateSpellCheckerService(
+                out Mock<IDataSource> mockDataSource);
+            
+            // Act
+            IEnumerable<string> actual = await service.GetSimilarWordsAsync(input, maxDistance, maxAmount);
+
+            // Assert
+            actual.Should().BeEquivalentTo(results);
         }
         
         [Fact]
@@ -92,12 +118,18 @@ namespace DidYouMeanTest
         }
 
         [Theory]
-        [InlineData("Piza",   "Pizza", 2.00f)]
-        [InlineData("Pizza",  "Pizza", 0.00f)]
-        [InlineData("Pixxa",  "Pizza", 1.00f)]
-        [InlineData("Pizaz",  "Pizza", 0.75f)]
-        [InlineData("Pizzas", "Pizza", 1.00f)]
-        [InlineData("Pixxas", "Pizza", 2.00f)]
+        [InlineData("Piza",   "Pizza", 2.00d)]
+        [InlineData("Pizza",  "Pizza", 0.00d)]
+        [InlineData("Pixxa",  "Pizza", 1.00d)]
+        [InlineData("Pizaz",  "Pizza", 0.75d)]
+        [InlineData("Pizzas", "Pizza", 1.00d)]
+        [InlineData("Pixxas", "Pizza", 2.00d)]
+        [InlineData("c",    "cc",   2.00d)]
+        [InlineData("ab",   "ac",   0.50d)]
+        [InlineData("abc",  "acb",  0.75d)]
+        [InlineData("ccc",  "cc",   1.00d)]
+        [InlineData("abcd", "acbc", 1.25d)]
+        [InlineData("cc",   "cc",   0.00d)]
         public void Distance_MeasureDistance(string input, string data, double distance)
         {
             // arrange
