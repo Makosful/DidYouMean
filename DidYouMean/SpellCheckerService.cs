@@ -40,7 +40,7 @@ namespace DidYouMean
                 
                 // Compute the distance between the dictionary word and the searched word
                 double distance = Distance(s, word);
-                // If distance is less than 1, return empty string
+                // If distance is less than 1, return empty list
                 if (distance <= 0)
                 {
                     _logger.Log(LogLevel.Debug, "Exact match found");
@@ -81,10 +81,59 @@ namespace DidYouMean
             return result;
         }
 
-        public Task<IEnumerable<string>> GetSimilarWordsForceAsync(string s, double maxDistance, int maxAmount = 0)
+        public async Task<IEnumerable<string>> GetSimilarWordsForceAsync(string s, double maxDistance, int maxAmount = 0)
         {
+            // DataSource null check
             if (_dataSource == null) throw new InvalidOperationException($"{nameof(IDataSource)} in {nameof(ISpellCheckerService)} is null");
-            throw new System.NotImplementedException();
+
+            // Fetches everything from the data source
+            IEnumerable<string> dictionary = await _dataSource.GetAllAsync();
+            // Creates a dictionary to store the word and it's distance
+            Dictionary<string, double> matches = new();
+            //List<string> matches = new();
+
+            // Loops through every word in the dictionary
+            foreach (string word in dictionary)
+            {
+                _logger.Log(LogLevel.Debug, "Trying to compare [{Search}] with [{Dictionary}]", s, word);
+
+                // Compute the distance between the dictionary word and the searched word
+                double distance = Distance(s, word);
+
+                // If distance is higher than max distance, discard it, otherwise save it 
+                if (distance <= maxDistance)
+                {
+                    matches.Add(word, distance);
+                    _logger.Log(LogLevel.Debug, "Possible match found: [{Match}] - [{Distance}]", word, distance);
+                }
+                else
+                {
+                    _logger.Log(LogLevel.Debug, "[{Match}] did not meet the distance threshold [{Distance}]", word,
+                        distance);
+                }
+            }
+            
+            var result = matches
+                // Orders the matches by distance, ascending (closest match first)
+                .OrderBy(x => x.Value)
+                // Converts the KeyPair value to just a string
+                .Select(x => x.Key)
+                .ToList();
+
+            // No max amount has been set. Return all
+            if (maxAmount <= 0) return result;
+            
+            // If the amount of results are more than the max amount
+            if (maxAmount < result.Count)
+            {
+                _logger.Log(LogLevel.Debug, "Enforcing maxAmount of: [{Amount}]", maxAmount);
+                // Only return the first set
+                var take = result.Take(maxAmount);
+                _logger.Log(LogLevel.Debug, "The following words have been taken: [{Take}]", take);
+                return take;
+            }
+            // Otherwise, if the count is less than maxAmount, just ignore it
+            return result;
         }
 
         public double Distance(string a, string b)
